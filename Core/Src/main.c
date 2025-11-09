@@ -113,6 +113,7 @@ int main(void)
   uint8_t xdir = 1;
   uint8_t ydir = 1;
 
+  uint32_t temptime = timestamp;
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -120,7 +121,7 @@ int main(void)
   uint16_t color = 10000;
   while (1)
   {
-
+/*
 	  ST7735_FillScreen(0);
 	  ST7735_FillScreen(ST7735_BLUE);
 	  ST7735_FillScreen(ST7735_RED);
@@ -131,7 +132,7 @@ int main(void)
 	  ST7735_FillScreen(ST7735_WHITE);
 	  ST7735_FillScreen(ST7735_ORANGE);
 	  ST7735_FillScreen(ST7735_LIGHTGREEN);
-	  /*
+*/
 	if(x > 111) xdir = 0;
 	if(y > 117) ydir = 0;
 	if(x < 1) xdir = 1;
@@ -139,8 +140,13 @@ int main(void)
 	ST7735_FillRectangle(x, y, 48, 10, 0);
 	if(xdir) x++; else x--;
 	if(ydir) y++; else y--;
-	printtime(x, y, color += 5000);
-	HAL_Delay(25);*/
+	printtime(x, y, color);
+	HAL_Delay(150);
+
+	if((timestamp - temptime) >= 3000) {
+		temptime = timestamp;
+		color += 14956;
+	}
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
