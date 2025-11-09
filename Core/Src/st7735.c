@@ -187,12 +187,13 @@ void ST7735_DrawPixel(uint16_t x, uint16_t y, uint16_t color) {
 }
 uint32_t ST7735_DrawString(uint16_t x, uint16_t y, char *pt, int16_t textColor){
   uint32_t count = 0;
-  if(y>12) return 0;
+  if(y>117) return 0;
+  uint16_t i = 0;
   while(*pt){
-    ST7735_DrawCharS(x*6, y*10, *pt, textColor, ST7735_BLACK, 1);
+    ST7735_DrawCharS((x + i * 6), y, *pt, textColor, ST7735_BLACK, 1);
     pt++;
-    x = x+1;
-    if(x>26) return count;  // number of characters printed
+    i++;
+    if(x>156) return count;  // number of characters printed
     count++;
   }
   return count;  // number of characters printed

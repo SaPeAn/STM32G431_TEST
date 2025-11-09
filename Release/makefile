@@ -60,8 +60,8 @@ all: main-build
 main-build: STM32G431_TEST.elf secondary-outputs
 
 # Tool invocations
-STM32G431_TEST.elf STM32G431_TEST.map: $(OBJS) $(USER_OBJS) C:\Users\Admin\STM32CubeIDE\workspace_1.19.0\STM32G431_TEST\STM32G431CBUX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "STM32G431_TEST.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\Admin\STM32CubeIDE\workspace_1.19.0\STM32G431_TEST\STM32G431CBUX_FLASH.ld" --specs=nosys.specs -Wl,-Map="STM32G431_TEST.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+STM32G431_TEST.elf STM32G431_TEST.map: $(OBJS) $(USER_OBJS) D:\_Proj_MCU\STM32\STM32G431_TEST\STM32G431CBUX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "STM32G431_TEST.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"D:\_Proj_MCU\STM32\STM32G431_TEST\STM32G431CBUX_FLASH.ld" --specs=nosys.specs -Wl,-Map="STM32G431_TEST.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
