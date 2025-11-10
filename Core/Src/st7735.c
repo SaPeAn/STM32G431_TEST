@@ -10,7 +10,14 @@ int32_t Yrange; //YrangeDiv2;
 int TimeIndex;
 uint16_t PlotBGColor;
 
-static void ST7735_SetAddressWindow(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1) {
+typedef union {
+	uint16_t u16arr[160];
+	uint8_t  u8arr[320];
+} tDispString;
+
+tDispString dispbuf;
+
+void ST7735_SetAddressWindow(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1) {
     lcd7735_sendCmd(ST7735_CASET); // Column addr set
 		lcd7735_sendData(0x00);            // XS15 ~ XS8
 		lcd7735_sendData(x0+ST7735_XSTART);     // XSTART       XS7 ~ XS0
@@ -144,7 +151,7 @@ void ST7735_Init_Command3(void)
 	lcd7735_sendCmd(ST7735_NORON);
 	HAL_Delay(10);
 	lcd7735_sendCmd(ST7735_DISPON);
-	HAL_Delay(100);
+	HAL_Delay(10);
 }
 
 
@@ -208,27 +215,33 @@ void ST7735_DrawCharS(int16_t x, int16_t y, char c, int16_t textColor, int16_t b
     return;
 
   for (i=0; i<6; i++ ) {
-    if (i == 5)
-      line = 0x0;
-    else
-      line = Font[(c*5)+i];
+
+    if (i == 5) line = 0x0;
+    else line = Font[(c*5)+i];
+
     for (j = 0; j<8; j++) {
       if (line & 0x1) {
-        if (size == 1)
+        /*if (size == 1)
           ST7735_DrawPixel(x+i, y+j, textColor);
         else {
           ST7735_FillRectangle(x+(i*size), y+(j*size), size, size, textColor);
-        }
-      } else if (bgColor != textColor) {
-        if (size == 1) // default size
-          ST7735_DrawPixel(x+i, y+j, bgColor);
-        else {  // big size
-         ST7735_FillRectangle(x+i*size, y+j*size, size, size, bgColor);
-        }
+        }*/
+    	dispbuf.u16arr[j*6+i] = textColor;
+      }
+      else {
+    	  /*if (bgColor != textColor) {
+        	if (size == 1) // default size
+          	  ST7735_DrawPixel(x+i, y+j, bgColor);
+        	else {  // big size
+         	 ST7735_FillRectangle(x+i*size, y+j*size, size, size, bgColor);
+        		}
+      	  	  }*/
+    	  dispbuf.u16arr[j*6+i] = bgColor;
       }
       line >>= 1;
     }
   }
+  printimage(x, y, x+5, y+7, dispbuf.u8arr, 96);
 }
 
 void ST7735_Drawaxes(uint16_t axisColor, uint16_t bgColor, char *xLabel,char *yLabel1, uint16_t label1Color, char *yLabel2, uint16_t label2Color,int32_t ymax, int32_t ymin)
@@ -309,6 +322,7 @@ void ST7735_DrawFastVLine(int16_t x, int16_t y, int16_t h, uint16_t color) {
 
 void ST7735_FillRectangle(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t color) {
     // clipping
+	uint16_t i = 0;
     if((x >= ST7735_WIDTH) || (y >= ST7735_HEIGHT)) return;
     if((x + w - 1) >= ST7735_WIDTH) w = ST7735_WIDTH - x;
     if((y + h - 1) >= ST7735_HEIGHT) h = ST7735_HEIGHT - y;
@@ -317,10 +331,14 @@ void ST7735_FillRectangle(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16
     ST7735_SetAddressWindow(x, y, x+w-1, y+h-1);
     LCD_DC1;
     for(y = h; y > 0; y--) {
+    	i = 0;
         for(x = w; x > 0; x--) {
-					lcd7735_sendData(color>>8);
-					lcd7735_sendData(color);
+					//lcd7735_sendData(color>>8);
+					//lcd7735_sendData(color);
+        			dispbuf.u16arr[i] = color;
+        			i++;
         }
+		HAL_SPI_Transmit(&hspi2, dispbuf.u8arr, 2*i, 10);
     }
 
 		LCD_CS1;  //Unselect
@@ -328,53 +346,14 @@ void ST7735_FillRectangle(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16
 void ST7735_FillScreen(uint16_t color) {
     ST7735_FillRectangle(0, 0, ST7735_WIDTH, ST7735_HEIGHT, color);
 }
-void ST7735_DrawImage(uint16_t x, uint16_t y, uint16_t w, uint16_t h, const uint16_t* data) {
-int16_t skipC = 0;
-  int16_t originalWidth = w;
-  int i = w*(h - 1);
 
-  if((x >= ST7735_WIDTH) || ((y - h + 1) >= ST7735_HEIGHT) || ((x + w) <= 0) || (y < 0)){
-    return;
-  }
-  if((w > ST7735_WIDTH) || (h > ST7735_HEIGHT)){
-
-    return;
-  }
-  if((x + w - 1) >= ST7735_WIDTH){
-    skipC = (x + w) - ST7735_WIDTH;
-    w = ST7735_WIDTH - x;
-  }
-  if((y - h + 1) < 0){
-    i = i - (h - y - 1)*originalWidth;
-    h = y + 1;
-  }
-  if(x < 0){
-    w = w + x;
-    skipC = -1*x;
-    i = i - x;
-    x = 0;
-  }
-  if(y >= ST7735_HEIGHT){
-    h = h - (y - ST7735_HEIGHT + 1);
-    y = ST7735_HEIGHT - 1;
-  }
-
-	LCD_CS0;  //Select
-
-  ST7735_SetAddressWindow(x, y-h+1, x+w-1, y);
-
-  for(y=0; y<h; y=y+1){
-    for(x=0; x<w; x=x+1){
-
-      lcd7735_sendData((uint8_t)(data[i] >> 8));
-
-      lcd7735_sendData((uint8_t)data[i]);
-      i = i + 1;
-    }
-    i = i + skipC;
-    i = i - 2*originalWidth;
-  }
-	LCD_CS1;  //Unselect
+void printimage(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, const uint8_t* data, uint16_t size)
+{
+	  LCD_CS0;
+	  ST7735_SetAddressWindow(x0, y0, x1, y1);
+	  LCD_DC1;
+	  HAL_SPI_Transmit(&hspi2, data, size, 20);
+	  LCD_CS1;
 }
 
 void ST7735_InvertColors(bool invert) {

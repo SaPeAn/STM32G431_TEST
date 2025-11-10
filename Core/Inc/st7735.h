@@ -129,7 +129,7 @@ uint32_t ST7735_DrawString(uint16_t x, uint16_t y, char *pt, int16_t textColor);
 void ST7735_DrawCharS(int16_t x, int16_t y, char c, int16_t textColor, int16_t bgColor, uint8_t size);
 void ST7735_FillRectangle(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t color);
 void ST7735_FillScreen(uint16_t color);
-void ST7735_DrawImage(uint16_t x, uint16_t y, uint16_t w, uint16_t h, const uint16_t* data);
+void printimage(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, const uint8_t* data, uint16_t size);
 void ST7735_InvertColors(bool invert);
 void ST7735_DrawFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color);
 void ST7735_DrawFastVLine(int16_t x, int16_t y, int16_t h, uint16_t color);
@@ -137,6 +137,7 @@ void ST7735_Drawaxes(uint16_t axisColor, uint16_t bgColor, char *xLabel,char *yL
 void ST7735_PlotIncrement(void);
 void ST7735_PlotPoint(int32_t data1, uint16_t color1);
 
+void ST7735_SetAddressWindow(uint8_t, uint8_t, uint8_t, uint8_t);
 void lcd7735_sendCmd(uint8_t cmd);
 void lcd7735_sendData(uint8_t data);
 void lcd7735_senddata(uint8_t data);

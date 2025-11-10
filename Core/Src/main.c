@@ -23,6 +23,7 @@
 /* USER CODE BEGIN Includes */
 #include "st7735.h"
 #include <stdio.h>
+#include "fonts.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -67,6 +68,8 @@ void printtime(uint16_t x, uint16_t y, uint16_t color)
 	sprintf(string, "%2.2lu:%2.2lu:%2.2lu", time / 3600, (time % 3600) / 60, time % 60);
 	ST7735_DrawString(x, y, string, color);
 }
+
+
 /* USER CODE END 0 */
 
 /**
@@ -112,41 +115,34 @@ int main(void)
   int16_t y = 0;
   uint8_t xdir = 1;
   uint8_t ydir = 1;
-
+  uint8_t trigger = 0;
   uint32_t temptime = timestamp;
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  uint16_t color = 10000;
   while (1)
   {
-/*
-	  ST7735_FillScreen(0);
-	  ST7735_FillScreen(ST7735_BLUE);
-	  ST7735_FillScreen(ST7735_RED);
-	  ST7735_FillScreen(ST7735_GREEN);
-	  ST7735_FillScreen(ST7735_CYAN);
-	  ST7735_FillScreen(ST7735_MAGENTA);
-	  ST7735_FillScreen(ST7735_YELLOW);
-	  ST7735_FillScreen(ST7735_WHITE);
-	  ST7735_FillScreen(ST7735_ORANGE);
-	  ST7735_FillScreen(ST7735_LIGHTGREEN);
-*/
 	if(x > 111) xdir = 0;
 	if(y > 117) ydir = 0;
 	if(x < 1) xdir = 1;
 	if(y < 1) ydir = 1;
-	ST7735_FillRectangle(x, y, 48, 10, 0);
+	if((timestamp - temptime) >= 3000) {
+			temptime = timestamp;
+			if(trigger) trigger = 0;
+			else trigger = 1;
+		}
+
+	if(trigger) printimage(0, 0, 159, 127, gImage_butterfly, 40960);
+	else printimage(0, 0, 159, 127, gImage_tiger, 40960);
+	//ST7735_FillRectangle(x, y, 48, 1, 0);
+	//ST7735_FillRectangle(x, y, 1, 10, 0);
 	if(xdir) x++; else x--;
 	if(ydir) y++; else y--;
-	printtime(x, y, color);
-	HAL_Delay(150);
+	printtime(x, y, ST7735_LIGHTGREEN);
+	HAL_Delay(20);
 
-	if((timestamp - temptime) >= 3000) {
-		temptime = timestamp;
-		color += 14956;
-	}
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -165,7 +161,7 @@ void SystemClock_Config(void)
 
   /** Configure the main internal regulator output voltage
   */
-  HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE1);
+  HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE1_BOOST);
 
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
@@ -174,8 +170,8 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-  RCC_OscInitStruct.PLL.PLLM = RCC_PLLM_DIV1;
-  RCC_OscInitStruct.PLL.PLLN = 25;
+  RCC_OscInitStruct.PLL.PLLM = RCC_PLLM_DIV2;
+  RCC_OscInitStruct.PLL.PLLN = 85;
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
   RCC_OscInitStruct.PLL.PLLQ = RCC_PLLQ_DIV2;
   RCC_OscInitStruct.PLL.PLLR = RCC_PLLR_DIV2;
@@ -193,7 +189,7 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_3) != HAL_OK)
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_4) != HAL_OK)
   {
     Error_Handler();
   }
@@ -222,7 +218,7 @@ static void MX_SPI2_Init(void)
   hspi2.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi2.Init.CLKPhase = SPI_PHASE_1EDGE;
   hspi2.Init.NSS = SPI_NSS_SOFT;
-  hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4;
+  hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8;
   hspi2.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi2.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi2.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;

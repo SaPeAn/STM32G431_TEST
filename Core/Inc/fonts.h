@@ -14,5 +14,6 @@ typedef struct {
 extern FontDef Font_7x10;
 extern FontDef Font_11x18;
 extern FontDef Font_16x26;
-
+extern const unsigned char gImage_tiger[40960];
+extern const unsigned char gImage_butterfly[40960];
 #endif // __FONTS_H__
